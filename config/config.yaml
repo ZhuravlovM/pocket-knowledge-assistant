@@ -1,0 +1,31 @@
+# ── Paths ─────────────────────────────────────────────────────────────────────
+
+paths:
+  documents: data/documents      # source documents for RAG
+  index: data/index              # vector index storage
+  prompts: config/prompts.yaml   # prompts file
+  database: data/assistant.db    # SQLite (future)
+  cache: data/cache
+  logs: logs/assistant.log
+
+# ── Models ────────────────────────────────────────────────────────────────────
+
+models:
+  llm: qwen2.5:3b-instruct
+  embed: bge-m3
+  timeout: 300.0
+
+# ── Ollama Parameters ─────────────────────────────────────────────────────────
+
+ollama:
+  num_ctx: 2048
+  num_batch: 256
+  num_thread: 5
+  temperature: 0.3
+
+# ── RAG ───────────────────────────────────────────────────────────────────────
+
+rag:
+  top_k: 10
+  response_mode: compact
+  

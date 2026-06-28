@@ -1,0 +1,78 @@
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+# Only Python files
+include = '\.pyi?$'
+
+exclude = '''
+/(
+    \.venv
+  | venv
+  | env
+  | .git
+  | __pycache__
+  | chroma_db
+  | chromadb
+  | faiss_index
+  | qdrant_storage
+  | weaviate
+  | logs
+  | data
+  | cache
+  | tmp
+)/
+'''
+
+
+[tool.isort]
+profile = "black"
+line_length = 88
+py_version = 311
+
+supported_extensions = ["py", "pyi"]
+
+skip_glob = [
+    ".venv/*",
+    "venv/*",
+    "env/*",
+    "chroma_db/*",
+    "chromadb/*",
+    "faiss_index/*",
+    "qdrant_storage/*",
+    "weaviate/*",
+    "cache/*",
+    "tmp/*",
+    "logs/*"
+]
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+python_files = "test_*.py"
+python_functions = "test_*"
+
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+exclude = [
+    ".venv",
+    "venv",
+    "env",
+    ".git",
+    "__pycache__",
+    "chroma_db",
+    "faiss_index",
+    "qdrant_storage",
+    "weaviate",
+    "cache",
+    "tmp",
+    "logs"
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]  # errors, pyflakes, import sorting
+fixable = ["ALL"]

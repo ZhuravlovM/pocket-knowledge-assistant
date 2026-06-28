@@ -1,0 +1,22 @@
+# RAG
+llama-index-core==0.14.23
+llama-index-llms-ollama==0.10.1
+llama-index-embeddings-ollama==0.9.0
+llama-index-readers-file==0.6.0
+
+# Ollama client
+ollama==0.6.2
+
+# Config
+PyYAML==6.0.3
+
+# Benchmark
+optuna==4.9.0
+requests==2.34.2
+
+# Dev
+black==26.5.1
+isort==8.0.1
+ruff==0.15.20
+pytest==9.1.1
+pytest-asyncio==1.4.0

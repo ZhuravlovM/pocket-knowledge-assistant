@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Project data — generated, not committed
+data/index/
+data/cache/
+data/documents/
+data/assistant.db
+data/benchmark.db
+data/benchmark_results.json
+
+# Keep sample data only
+!data/sample/
+
+# Logs
+logs/
+*.log
+
+# Ollama / model artifacts
+.ollama/
+*.gguf
+*.bin
+
+# LlamaIndex cache
+.llamaindex/
+
+# Testing
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
