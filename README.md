@@ -1,4 +1,4 @@
-# RAG Documentation Chat
+# Pocket Knowledge Assistant
 
 A local AI assistant that answers questions about your documents.
 Runs entirely offline using [Ollama](https://ollama.com) and [LlamaIndex](https://www.llamaindex.ai).
