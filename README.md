@@ -1,5 +1,5 @@
-# RAG Documentation Chat
-
+# Pocket Knowledge Assistant
+ 
 A local AI assistant that answers questions about your documents.
 Runs entirely offline using [Ollama](https://ollama.com) and [LlamaIndex](https://www.llamaindex.ai).
 
@@ -43,6 +43,12 @@ cp /your/docs/* data/documents/
 │   └── status.py           # System and project status
 │
 ├── scripts/
+│   ├── lib/                # Shared shell libraries
+│   │   ├── common.sh       # Single entry point — sources the rest
+│   │   ├── ui.sh           # Colors, logging, ok/fail/info/warn, spinner
+│   │   ├── config.sh       # Reads config/config.yaml into bash
+│   │   ├── python.sh       # Python version check, venv management
+│   │   └── system.sh       # Ollama & dependency checks
 │   ├── setup.sh            # Install dependencies, pull models, create dirs
 │   ├── uninstall.sh        # Remove models, index, venv, data
 │   └── check_system.sh     # Pre-flight dependency check
@@ -50,14 +56,10 @@ cp /your/docs/* data/documents/
 ├── data/
 │   ├── documents/          # Your source documents (PDF, TXT, MD, DOCX…)
 │   ├── index/              # Vector index (auto-generated)
-│   └── cache/              # Temporary cache
+│   └── cache/              # Cache, incl. chat history
 │
 ├── logs/
-│   └── assistant.log
-│
-├── models/
-│   └── README.md           # Model reference
-│
+│ 
 └── tests/
 ```
 
