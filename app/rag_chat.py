@@ -8,13 +8,17 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import readline  # noqa: F401 — enables arrow keys / history for input()
+from pathlib import Path
 
 from app.config import cfg
 from app.prompts import load_prompts
 from app.rag import configure_settings, get_query_engine, load_index
-from app.utils import get_logger
+from app.utils import Spinner, get_logger
 
 log = get_logger(__name__)
+
+HISTORY_FILE = Path(cfg.paths.cache) / "rag_chat_history"
 
 
 # ── Output ─────────────────────────────────────────────────────────────────────
@@ -41,8 +45,12 @@ def print_response(response) -> None:
 
 
 def run_chat(query_engine, query_template: str) -> None:
+    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    if HISTORY_FILE.exists():
+        readline.read_history_file(HISTORY_FILE)
+
     print(f"\n{'═' * 60}")
-    print("  Documentation Assistant  |  'exit' to quit")
+    print("  Documentation Assistant  |  'exit' to quit  |  Ctrl+C to cancel a query")
     print(f"{'═' * 60}\n")
 
     while True:
@@ -58,7 +66,15 @@ def run_chat(query_engine, query_template: str) -> None:
         if question.lower() in ("exit", "q", "quit"):
             break
 
-        response = query_engine.query(query_template.format(question=question))
+        readline.write_history_file(HISTORY_FILE)
+
+        try:
+            with Spinner("Thinking"):
+                response = query_engine.query(query_template.format(question=question))
+        except KeyboardInterrupt:
+            print("\n  ⚠ Query cancelled.\n")
+            continue
+
         print_response(response)
 
 

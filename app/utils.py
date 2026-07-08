@@ -4,8 +4,11 @@ app/utils.py — shared utility functions.
 
 from __future__ import annotations
 
+import itertools
 import logging
 import sys
+import threading
+import time
 from pathlib import Path
 
 from app.config import cfg
@@ -40,3 +43,37 @@ def die(message: str, code: int = 1) -> None:
     """Prints an error and exits."""
     print(f"[Error] {message}", file=sys.stderr)
     sys.exit(code)
+
+
+class Spinner:
+    """Animated status line for long-running calls (e.g. 'Thinking...').
+
+    Usage:
+        with Spinner("Thinking"):
+            response = query_engine.query(question)
+    """
+
+    FRAMES = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+
+    def __init__(self, message: str = "Thinking", interval: float = 0.1) -> None:
+        self.message = message
+        self.interval = interval
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._spin, daemon=True)
+
+    def _spin(self) -> None:
+        for frame in itertools.cycle(self.FRAMES):
+            if self._stop.is_set():
+                break
+            print(f"\r  {frame} {self.message}...", end="", flush=True)
+            time.sleep(self.interval)
+        # Clear the line on stop
+        print("\r" + " " * (len(self.message) + 10) + "\r", end="", flush=True)
+
+    def __enter__(self) -> "Spinner":
+        self._thread.start()
+        return self
+
+    def __exit__(self, *exc_info) -> None:
+        self._stop.set()
+        self._thread.join()
