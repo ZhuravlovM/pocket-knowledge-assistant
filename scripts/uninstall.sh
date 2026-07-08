@@ -1,35 +1,11 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-LOG_DIR="logs"
-LOG_FILE="${LOG_DIR}/uninstall.log"
-mkdir -p "$LOG_DIR"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/common.sh
+source "${SCRIPT_DIR}/lib/common.sh"
 
-log()     { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"; }
-
-RESET='\033[0m'; BOLD='\033[1m'
-FG_WHITE='\033[97m'; FG_CYAN='\033[96m'; FG_GREEN='\033[92m'
-FG_YELLOW='\033[93m'; FG_RED='\033[91m'; FG_GRAY='\033[90m'
-
-ok()      { echo -e "  ${FG_GREEN}✓${RESET} $*"; log "OK: $*"; }
-fail()    { echo -e "  ${FG_RED}✗${RESET} $*"; log "FAIL: $*"; }
-info()    { echo -e "  ${FG_CYAN}→${RESET} $*"; log "INFO: $*"; }
-warn()    { echo -e "  ${FG_YELLOW}⚠${RESET} $*"; log "WARN: $*"; }
-divider() { echo -e "  ${FG_GRAY}──────────────────────────────────────────────────${RESET}"; }
-
-confirm() {
-    local msg="${1:-Are you sure?}"
-    read -rp "  ${msg} [y/N] " ans
-    [[ "${ans,,}" == "y" ]]
-}
-
-config_models() {
-    python3 -c "
-from app.config import cfg
-print(cfg.models.llm)
-print(cfg.models.embed)
-" 2>/dev/null || echo -e "qwen2.5:3b-instruct\nbge-m3"
-}
+init_logging "logs/uninstall.log"
 
 # ── Actions ───────────────────────────────────────────────────────────────────
 
@@ -38,7 +14,7 @@ remove_index() {
     divider
 
     local index_dir
-    index_dir=$(python3 -c "from app.config import cfg; print(cfg.paths.index)" 2>/dev/null || echo "data/index")
+    index_dir=$(cfg_index_dir)
 
     if [[ ! -d "$index_dir" || -z "$(ls -A "$index_dir" 2>/dev/null)" ]]; then
         warn "Index not found or already empty ($index_dir)"
@@ -59,7 +35,7 @@ remove_models() {
     echo -e "\n  ${BOLD}Remove Ollama models${RESET}"
     divider
 
-    if ! command -v ollama &>/dev/null || ! ollama list &>/dev/null 2>&1; then
+    if ! command -v ollama &>/dev/null || ! ollama_running; then
         warn "Ollama not available"
         return
     fi
@@ -89,7 +65,7 @@ remove_models() {
         a|A)
             confirm "Delete ALL models?" || return
             for m in "${models[@]}"; do
-                if ollama rm "$m" >> "$LOG_FILE" 2>&1; then
+                if ollama rm "$m" 2>&1 | tee -a "$LOG_FILE"; then
                     ok "Removed: $m"
                 else
                     fail "Failed: $m"
@@ -104,7 +80,7 @@ remove_models() {
             fi
             local target="${models[$idx]}"
             confirm "Delete $target?" || return
-            if ollama rm "$target" >> "$LOG_FILE" 2>&1; then
+            if ollama rm "$target" 2>&1 | tee -a "$LOG_FILE"; then
                 ok "Removed: $target"
             else
                 fail "Failed: $target"
@@ -117,17 +93,17 @@ remove_venv() {
     echo -e "\n  ${BOLD}Remove virtual environment${RESET}"
     divider
 
-    if [[ ! -d ".venv" ]]; then
-        warn ".venv not found"
+    if [[ ! -d "$VENV_DIR" ]]; then
+        warn "$VENV_DIR not found"
         return
     fi
 
     local size
-    size=$(du -sh .venv 2>/dev/null | cut -f1)
-    confirm "Delete .venv ($size)?" || return
-    rm -rf .venv
-    ok ".venv removed"
-    log "Removed .venv"
+    size=$(du -sh "$VENV_DIR" 2>/dev/null | cut -f1)
+    confirm "Delete $VENV_DIR ($size)?" || return
+    rm -rf "$VENV_DIR"
+    ok "$VENV_DIR removed"
+    log "Removed $VENV_DIR"
 }
 
 remove_data() {
@@ -151,7 +127,7 @@ full_uninstall() {
     warn "This will remove:"
     echo "    • Ollama models referenced in config"
     echo "    • Vector index"
-    echo "    • .venv"
+    echo "    • $VENV_DIR"
     echo "    • Cache, logs, benchmark DB"
     echo
     warn "Your documents in data/documents will NOT be deleted."
@@ -162,16 +138,16 @@ full_uninstall() {
 
     while IFS= read -r m; do
         if ollama list 2>/dev/null | grep -q "^${m}"; then
-            if ollama rm "$m" >> "$LOG_FILE" 2>&1; then
+            if ollama rm "$m" 2>&1 | tee -a "$LOG_FILE"; then
                 ok "Removed model: $m"
                 log "Removed model: $m"
             else
                 fail "Failed to remove: $m"
             fi
         fi
-    done < <(config_models)
+    done < <(cfg_models)
 
-    rm -rf data/index data/cache .venv data/benchmark.db data/benchmark_results.json
+    rm -rf data/index data/cache "$VENV_DIR" data/benchmark.db data/benchmark_results.json
     ok "Cleanup complete"
     log "Full uninstall complete"
     echo
