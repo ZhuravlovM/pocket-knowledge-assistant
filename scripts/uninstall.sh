@@ -23,12 +23,12 @@ remove_index() {
 
     local size
     size=$(du -sh "$index_dir" 2>/dev/null | cut -f1)
-    warn "This will delete the index at $index_dir ($size)"
+    notice "This will delete the index at $index_dir ($size)"
     confirm "Delete index?" || return
 
     rm -rf "$index_dir"
     ok "Index removed ($index_dir)"
-    log "Removed index: $index_dir"
+    log "INDEX REMOVE OK: $index_dir"
 }
 
 remove_models() {
@@ -65,10 +65,12 @@ remove_models() {
         a|A)
             confirm "Delete ALL models?" || return
             for m in "${models[@]}"; do
-                if ollama rm "$m" 2>&1 | tee -a "$LOG_FILE"; then
+                if ollama rm "$m" 2>/dev/null; then
                     ok "Removed: $m"
+                    log "MODEL REMOVE OK: $m"
                 else
                     fail "Failed: $m"
+                    log "MODEL REMOVE FAILED: $m"
                 fi
             done
             ;;
@@ -80,10 +82,12 @@ remove_models() {
             fi
             local target="${models[$idx]}"
             confirm "Delete $target?" || return
-            if ollama rm "$target" 2>&1 | tee -a "$LOG_FILE"; then
+            if ollama rm "$target" 2>/dev/null; then
                 ok "Removed: $target"
+                log "MODEL REMOVE OK: $target"
             else
                 fail "Failed: $target"
+                log "MODEL REMOVE FAILED: $target"
             fi
             ;;
     esac
@@ -101,9 +105,10 @@ remove_venv() {
     local size
     size=$(du -sh "$VENV_DIR" 2>/dev/null | cut -f1)
     confirm "Delete $VENV_DIR ($size)?" || return
+
     rm -rf "$VENV_DIR"
     ok "$VENV_DIR removed"
-    log "Removed $VENV_DIR"
+    log "VENV REMOVE OK: $VENV_DIR"
 }
 
 remove_data() {
@@ -115,7 +120,7 @@ remove_data() {
 
     rm -rf data/index data/cache data/benchmark.db data/benchmark_results.json
     ok "Data removed"
-    log "Removed data/index, data/cache, benchmark files"
+    log "DATA REMOVE OK: Removed data/index, data/cache, data/benchmark.db, data/benchmark_results.json"
     warn "Logs cleared — this log entry is the last one"
     rm -rf logs
 }
@@ -138,11 +143,12 @@ full_uninstall() {
 
     while IFS= read -r m; do
         if ollama list 2>/dev/null | grep -q "^${m}"; then
-            if ollama rm "$m" 2>&1 | tee -a "$LOG_FILE"; then
+            if ollama rm "$m" 2>/dev/null; then
                 ok "Removed model: $m"
-                log "Removed model: $m"
+                log "MODEL REMOVE OK: $m"
             else
                 fail "Failed to remove: $m"
+                log "MODEL REMOVE FAILED: $m"
             fi
         fi
     done < <(cfg_models)
@@ -183,8 +189,8 @@ case "$choice" in
     3) remove_venv ;;
     4) remove_data ;;
     5) full_uninstall ;;
-    q|Q) log "Cancelled"; echo -e "  ${FG_GRAY}Cancelled.${RESET}" ;;
-    *) warn "Unknown option" ;;
+    q|Q|exit|quit) break ;;
+    *) warn "Unknown option: $choice"; sleep 1 ;;
 esac
 
 echo
