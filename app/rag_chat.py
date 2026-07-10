@@ -27,7 +27,7 @@ MAX_LINE_WIDTH = 100
 
 def _wrap_width() -> int:
     terminal_width = shutil.get_terminal_size(fallback=(100, 20)).columns
-    return max(min(terminal_width - 2, MAX_LINE_WIDTH), 20)
+    return min(max(terminal_width - 2, 1), MAX_LINE_WIDTH)
 
 
 # ── Output ─────────────────────────────────────────────────────────────────────
