@@ -27,5 +27,5 @@ ollama:
 
 rag:
   top_k: 5
-  response_mode: refine
+  response_mode: compact
   
