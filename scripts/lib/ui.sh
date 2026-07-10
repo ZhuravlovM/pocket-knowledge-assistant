@@ -87,6 +87,9 @@ confirm() {
 spinner() {
     local pid=$1
     local msg=$2
+
+    [[ -t 1 && -w /dev/tty ]] || return 0
+
     local frames=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
     local i=0
 
