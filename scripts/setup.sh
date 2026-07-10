@@ -37,11 +37,11 @@ install_dependencies() {
 
     run_spinner \
         "Upgrading pip..." \
-        pip install --quiet --upgrade pip
+        pip install --quiet --upgrade pip || die "Failed to upgrade pip"
 
     run_spinner \
         "Installing dependencies..." \
-        pip install --quiet -r "$REQUIREMENTS_FILE"
+        pip install --quiet -r "$REQUIREMENTS_FILE" || die "Failed to install dependencies"
 
     ok "Dependencies installed"
 }
@@ -98,7 +98,7 @@ print_summary() {
     echo -e "\n${BOLD}──────────────────────────────────────────────────${RESET}"
     echo -e "${FG_GREEN}  Setup completed.${RESET}  Log: ${LOG_FILE}"
     echo "  Next steps:"
-    echo "    1. Put documents into ./data/documents/"
+    echo "    1. Put documents into $(cfg_docs_dir)/"
     echo "    2. ./run.sh  →  1 (Build index)"
     echo "    3. ./run.sh  →  2 (Start chat)"
     echo -e "${BOLD}──────────────────────────────────────────────────${RESET}\n"
