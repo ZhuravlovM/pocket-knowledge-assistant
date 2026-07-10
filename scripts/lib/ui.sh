@@ -28,7 +28,13 @@ ok()      { echo -e "  ${FG_GREEN}✓${RESET} $*"; log "OK: $*"; }
 fail()    { echo -e "  ${FG_RED}✗${RESET} $*"; log "FAIL: $*"; }
 info()    { echo -e "  ${FG_CYAN}→${RESET} $*"; log "INFO: $*"; }
 warn()    { echo -e "  ${FG_YELLOW}⚠${RESET} $*"; log "WARN: $*"; }
+notice()  { echo -e "  ${FG_YELLOW}⚠${RESET} $*"; }
 divider() { echo -e "  ${FG_GRAY}──────────────────────────────────────────────────${RESET}"; }
+
+pause_return() {
+    local msg="${1:-Press Enter to return...}"
+    read -rp "  ${msg}" _
+}
 
 # Fatal variant: report + exit. Use in place of `fail` wherever the original
 # script relied on fail() terminating execution (e.g. setup.sh).
@@ -60,6 +66,13 @@ banner() {
     printf "  ${BOLD}${FG_WHITE}│${RESET}  ${FG_CYAN}${BOLD}◆  %-44s${RESET}${BOLD}${FG_WHITE}│${RESET}\n" "$title"
     printf "  ${BOLD}${FG_WHITE}│${RESET}  ${FG_GRAY}%-47s${RESET}${BOLD}${FG_WHITE}│${RESET}\n" "$subtitle"
     echo -e "  ${BOLD}${FG_WHITE}╰─────────────────────────────────────────────────╯${RESET}"
+    echo
+}
+
+# App exit screen.
+exit_app() {
+    clear
+    echo -e "  ${FG_GRAY}Goodbye.${RESET}"
     echo
 }
 

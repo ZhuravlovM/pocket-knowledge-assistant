@@ -53,15 +53,21 @@ action_build_index() {
     local default_docs
     default_docs=$(cfg_docs_dir)
     echo -e "  ${FG_GRAY}Documents path:${RESET} ${FG_CYAN}${default_docs}${RESET}"
-    read -rp "  Change path? (Enter = keep current): " custom_docs
+    read -rp "  Change path? (Enter = keep current, 'q' to cancel): " custom_docs
     echo
+
+    if [[ "${custom_docs,,}" == "q" ]]; then
+        echo
+        pause_return
+        return
+    fi
 
     local docs_dir="${custom_docs:-$default_docs}"
 
     if [[ ! -d "$docs_dir" || -z "$(find "$docs_dir" -type f 2>/dev/null | head -1)" ]]; then
         fail "Directory '$docs_dir' is empty or does not exist"
         echo
-        read -rp "  Press Enter to return..." _
+        pause_return
         return
     fi
 
@@ -80,7 +86,7 @@ action_build_index() {
     echo
     ok "Done"
     echo
-    read -rp "  Press Enter to return..." _
+    pause_return
 }
 
 action_start_chat() {
@@ -92,13 +98,13 @@ action_start_chat() {
     if ! check_index; then
         fail "Index not built — select option 1 first"
         echo
-        read -rp "  Press Enter to return..." _
+        pause_return
         return
     fi
 
     python3 -m app.rag_chat
     echo
-    read -rp "  Press Enter to return..." _
+    pause_return
 }
 
 action_status() {
@@ -106,7 +112,7 @@ action_status() {
     echo -e "  ${BOLD}Status${RESET}"
     divider
     python3 -m app.status
-    read -rp "  Press Enter to return..." _
+    pause_return
 }
 
 action_benchmark() {
@@ -135,7 +141,7 @@ action_benchmark() {
 
     python3 -m app.benchmark --trials "$trials"
     echo
-    read -rp "  Press Enter to return..." _
+    pause_return
 }
 
 action_setup() {
@@ -145,13 +151,13 @@ action_setup() {
     echo
     bash scripts/setup.sh
     echo
-    read -rp "  Press Enter to return..." _
+    pause_return
 }
 
 action_uninstall() {
     header
     bash scripts/uninstall.sh
-    read -rp "  Press Enter to return..." _
+    pause_return
 }
 
 # ── Main menu ─────────────────────────────────────────────────────────────────
@@ -189,9 +195,7 @@ menu() {
         esac
     done
 
-    clear
-    echo -e "  ${FG_GRAY}Goodbye.${RESET}"
-    echo
+    exit_app
 }
 
 # ── Entry ─────────────────────────────────────────────────────────────────────

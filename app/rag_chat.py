@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import argparse
 import readline  # noqa: F401 — enables arrow keys / history for input()
+import shutil
+import textwrap
 from pathlib import Path
 
 from app.config import cfg
@@ -18,14 +20,24 @@ from app.utils import Spinner, get_logger
 
 log = get_logger(__name__)
 
-HISTORY_FILE = Path(cfg.paths.cache) / "rag_chat_history"
+HISTORY_FILE = Path(cfg.paths.cache) / "query_history"
+
+MAX_LINE_WIDTH = 100
+
+
+def _wrap_width() -> int:
+    terminal_width = shutil.get_terminal_size(fallback=(100, 20)).columns
+    return max(min(terminal_width - 2, MAX_LINE_WIDTH), 20)
 
 
 # ── Output ─────────────────────────────────────────────────────────────────────
 
 
 def print_response(response) -> None:
-    print(f"\n{response.response}\n")
+    width = _wrap_width()
+    paragraphs = response.response.split("\n\n")
+    wrapped = "\n\n".join(textwrap.fill(p, width=width) for p in paragraphs)
+    print(f"\n{wrapped}\n")
 
     if not response.source_nodes:
         return
@@ -49,9 +61,9 @@ def run_chat(query_engine, query_template: str) -> None:
     if HISTORY_FILE.exists():
         readline.read_history_file(HISTORY_FILE)
 
-    print(f"\n{'═' * 60}")
-    print("  Documentation Assistant  |  'exit' to quit  |  Ctrl+C to cancel a query")
-    print(f"{'═' * 60}\n")
+    print(f"\n{'═' * 75}")
+    print("  Documentation Assistant  |  'exit' to quit  |  Ctrl+C to cancel a query ")
+    print(f"{'═' * 75}\n")
 
     while True:
         try:
