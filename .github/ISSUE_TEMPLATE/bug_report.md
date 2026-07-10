@@ -63,12 +63,12 @@ If applicable, include your configuration. Remove any passwords, API keys, or ot
 
 If the issue depends on a specific document, prompt, or dataset, provide a minimal reproducible example.
 
-```
+```text
 ```
 
 ## Additional Context
 
 Add any other information that may help diagnose the issue.
 
-```
+```text
 ```

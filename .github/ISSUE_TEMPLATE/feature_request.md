@@ -34,7 +34,5 @@ If applicable, provide an example command, configuration, or workflow.
 
 Include any other relevant information, mockups, references, or screenshots that may help explain the request.
 
+```text
 ```
-```
-
-
