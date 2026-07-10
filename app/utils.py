@@ -66,7 +66,8 @@ class Spinner:
             if self._stop.is_set():
                 break
             print(f"\r  {frame} {self.message}...", end="", flush=True)
-            time.sleep(self.interval)
+            if self._stop.wait(self.interval):
+                break
         # Clear the line on stop
         print("\r" + " " * (len(self.message) + 10) + "\r", end="", flush=True)
 
