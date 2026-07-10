@@ -189,7 +189,7 @@ case "$choice" in
     3) remove_venv ;;
     4) remove_data ;;
     5) full_uninstall ;;
-    q|Q|exit|quit) break ;;
+    q|Q|exit|quit) exit 0 ;;
     *) warn "Unknown option: $choice"; sleep 1 ;;
 esac
 
