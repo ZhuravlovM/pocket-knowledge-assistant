@@ -5,7 +5,14 @@
 # cfg_get "models.llm" "qwen2.5:3b-instruct"
 cfg_get() {
     local attr="$1" default="$2"
-    python3 -c "from app.config import cfg; print(cfg.${attr})" 2>/dev/null || echo "$default"
+    local value
+    if ! value="$(python3 -c "from app.config import cfg; print(cfg.${attr})" 2>/dev/null)"; then
+        echo "$default"
+    elif [[ -z "$value" || "$value" == "None" ]]; then
+        echo "$default"
+    else
+        echo "$value"
+    fi
 }
 
 cfg_llm_model()   { cfg_get "models.llm" "qwen2.5:3b-instruct"; }
