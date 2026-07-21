@@ -12,7 +12,7 @@ check_python() {
     minor=$(python3 -c "import sys; print(sys.version_info.minor)")
     major=$(python3 -c "import sys; print(sys.version_info.major)")
 
-    [[ "$major" -ge 3 && "$minor" -ge "$MIN_PYTHON_MINOR" ]] \
+    [[ "$major" -gt 3 || ( "$major" -eq 3 && "$minor" -ge "$MIN_PYTHON_MINOR" ) ]] \
         || die "Python 3.${MIN_PYTHON_MINOR}+ required, found ${major}.${minor}"
 
     ok "Python ${major}.${minor}"
