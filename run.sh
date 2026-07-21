@@ -82,9 +82,14 @@ action_build_index() {
         rm -rf "$(cfg_index_dir)"
     fi
 
-    python3 -m app.build_index --docs "$docs_dir"
-    echo
-    ok "Done"
+    if python3 -m app.build_index --docs "$docs_dir"; then
+        echo
+        ok "Done"
+    else
+        echo
+        fail "Index build failed"
+    fi
+           
     echo
     pause_return
 }
