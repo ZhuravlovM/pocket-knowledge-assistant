@@ -23,12 +23,14 @@ setup_venv() {
     if [[ -d "$VENV_DIR" ]]; then
         info "$VENV_DIR already exists — reusing"
     else
-        python3 -m venv "$VENV_DIR" && ok "$VENV_DIR created" || die "Failed to create $VENV_DIR"
+        if ! python3 -m venv "$VENV_DIR"; then
+            die "Failed to create $VENV_DIR"
+        fi
+        ok "$VENV_DIR created"
     fi
 
     # shellcheck disable=SC1091
     source "$VENV_DIR/bin/activate" || die "Failed to activate $VENV_DIR"
-
     ok "venv activated"
 }
 
