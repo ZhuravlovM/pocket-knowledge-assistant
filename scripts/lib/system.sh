@@ -18,7 +18,10 @@ ollama_running() {
 ensure_ollama_running() {
     local missing=0
 
-    command -v ollama &>/dev/null || { fail "ollama not found"; missing=1; }
+    if ! command -v ollama &>/dev/null; then
+        fail "ollama not found"
+        return 1
+    fi
 
     if ! ollama_running; then
         warn "Ollama not running — starting it..."
