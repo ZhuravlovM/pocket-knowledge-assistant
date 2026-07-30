@@ -76,9 +76,8 @@ action_build_index() {
 
     if check_index; then
         warn "Index already exists."
-        read -rp "  Rebuild? [y/N] " confirm_rebuild
+        confirm "Rebuild?" || { echo; return; }
         echo
-        [[ "${confirm_rebuild,,}" != "y" ]] && return
         rm -rf "$(cfg_index_dir)"
     fi
 
@@ -128,9 +127,8 @@ action_benchmark() {
 
     if ! python3 -c "import optuna" &>/dev/null; then
         warn "optuna not installed"
-        read -rp "  Install now? [y/N] " confirm_install
+        confirm "Install now?" || { echo; return; }
         echo
-        [[ "${confirm_install,,}" == "y" ]] || return
         pip install optuna --quiet && ok "optuna installed" || { fail "Install failed"; return; }
     fi
 
@@ -140,9 +138,8 @@ action_benchmark() {
     echo
 
     warn "Each trial takes ~3 min on CPU. Do not close the terminal."
-    read -rp "  Start? [y/N] " confirm_start
+    confirm "Start?" || { echo; return; }
     echo
-    [[ "${confirm_start,,}" != "y" ]] && return
 
     python3 -m app.benchmark --trials "$trials"
     echo

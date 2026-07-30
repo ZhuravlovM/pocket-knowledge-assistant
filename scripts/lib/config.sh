@@ -6,6 +6,11 @@
 cfg_get() {
     local attr="$1" default="$2"
     local value
+    # $attr is interpolated into Python source below — allow dotted paths only.
+    if [[ ! "$attr" =~ ^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$ ]]; then
+        echo "$default"
+        return
+    fi
     if ! value="$(python3 -c "from app.config import cfg; print(cfg.${attr})" 2>/dev/null)"; then
         echo "$default"
     elif [[ -z "$value" || "$value" == "None" ]]; then
