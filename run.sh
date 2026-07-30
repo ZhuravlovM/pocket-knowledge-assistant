@@ -126,7 +126,7 @@ action_benchmark() {
         warn "optuna not installed"
         confirm "Install now?" || { echo; return; }
         echo
-        if ! pip install optuna --quiet; then
+        if ! python3 -m pip install optuna --quiet; then
             fail "Install failed"
             return
         fi
