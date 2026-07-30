@@ -26,9 +26,13 @@ remove_index() {
     notice "This will delete the index at $index_dir ($size)"
     confirm "Delete index?" || return
 
-    rm -rf "$index_dir"
-    ok "Index removed ($index_dir)"
-    log "INDEX REMOVE OK: $index_dir"
+    if rm -rf "$index_dir"; then
+        ok "Index removed ($index_dir)"
+        log "INDEX REMOVE OK: $index_dir"
+    else
+        fail "Failed to remove index ($index_dir)"
+        log "INDEX REMOVE FAILED: $index_dir"
+    fi
 }
 
 remove_models() {
@@ -106,9 +110,13 @@ remove_venv() {
     size=$(du -sh "$VENV_DIR" 2>/dev/null | cut -f1)
     confirm "Delete $VENV_DIR ($size)?" || return
 
-    rm -rf "$VENV_DIR"
-    ok "$VENV_DIR removed"
-    log "VENV REMOVE OK: $VENV_DIR"
+    if rm -rf "$VENV_DIR"; then
+        ok "$VENV_DIR removed"
+        log "VENV REMOVE OK: $VENV_DIR"
+    else
+        fail "Failed to remove $VENV_DIR"
+        log "VENV REMOVE FAILED: $VENV_DIR"
+    fi
 }
 
 remove_data() {
@@ -153,9 +161,13 @@ full_uninstall() {
         fi
     done < <(cfg_models)
 
-    rm -rf data/index data/cache "$VENV_DIR" data/benchmark.db data/benchmark_results.json
-    ok "Cleanup complete"
-    log "Full uninstall complete"
+    if rm -rf data/index data/cache "$VENV_DIR" data/benchmark.db data/benchmark_results.json; then
+        ok "Cleanup complete"
+        log "Full uninstall complete"
+    else
+        fail "Cleanup failed"
+        log "FULL UNINSTALL CLEANUP FAILED"
+    fi
     echo
     warn "Ollama itself was NOT uninstalled. To remove it:"
     echo "    https://ollama.com/docs/uninstall"
