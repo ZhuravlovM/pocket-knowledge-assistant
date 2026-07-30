@@ -18,7 +18,7 @@ repos:
 
     - id: ruff
       name: "Running linter"
-      entry: ruff .
+      entry: ruff check .
       language: system
       types: [python]
       pass_filenames: false
