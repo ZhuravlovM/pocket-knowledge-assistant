@@ -8,6 +8,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 import readline  # noqa: F401 — enables arrow keys / history for input()
 import shutil
 import textwrap
@@ -33,6 +34,38 @@ def _wrap_width() -> int:
 # ── Output ─────────────────────────────────────────────────────────────────────
 
 
+_BLOCKQUOTE_PREFIX = re.compile(r"^\s*(?:>\s?)+")
+_LIST_PREFIX = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
+
+
+def _wrap_line(line: str, width: int) -> str:
+    """Wrap a single prose line, keeping its Markdown prefix and hard break."""
+    # Indented code, table rows and headings must not be re-flowed at all.
+    if line.startswith(("    ", "\t")) or line.lstrip().startswith(("|", "#")):
+        return line
+
+    hard_break = line.endswith("  ") and line.strip()
+    body = line.rstrip()
+
+    match = _BLOCKQUOTE_PREFIX.match(body) or _LIST_PREFIX.match(body)
+    if match:
+        prefix = match.group(0)
+        # A blockquote marker must repeat on every line; a list marker must not.
+        subsequent = prefix if prefix.lstrip().startswith(">") else " " * len(prefix)
+    else:
+        prefix = subsequent = body[: len(body) - len(body.lstrip())]
+
+    wrapped = textwrap.fill(
+        body[len(prefix) :],
+        width=width,
+        initial_indent=prefix,
+        subsequent_indent=subsequent,
+        break_long_words=False,
+        break_on_hyphens=False,
+    )
+    return f"{wrapped}  " if hard_break else wrapped
+
+
 def _wrap_preserving_structure(text: str, width: int) -> str:
     lines = text.split("\n")
     out = []
@@ -41,10 +74,10 @@ def _wrap_preserving_structure(text: str, width: int) -> str:
         if line.lstrip().startswith("```"):
             in_code_block = not in_code_block
             out.append(line)
-        elif in_code_block or not line.strip():
+        elif in_code_block or not line.strip() or len(line) <= width:
             out.append(line)
         else:
-            out.append(textwrap.fill(line, width=width))
+            out.append(_wrap_line(line, width))
     return "\n".join(out)
 
 
