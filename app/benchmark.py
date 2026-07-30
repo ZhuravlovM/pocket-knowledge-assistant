@@ -34,6 +34,10 @@ BENCHMARK_PROMPT = (
 
 
 def run_benchmark(model: str, params: dict) -> dict:
+    """Runs one generation against Ollama's HTTP API and returns timing metrics.
+
+    Bypasses LlamaIndex so that raw Ollama options can be varied per call.
+    """
     payload = {
         "model": model,
         "prompt": BENCHMARK_PROMPT,
@@ -67,6 +71,12 @@ def run_benchmark(model: str, params: dict) -> dict:
 
 
 def make_objective(model: str):
+    """Returns an Optuna objective that tunes Ollama options for the given model.
+
+    The score favours throughput and penalises latency
+    (tokens_per_sec - first_token_ms * 0.005); failed runs are pruned.
+    """
+
     def objective(trial: optuna.Trial) -> float:
         params = {
             "num_ctx": trial.suggest_categorical("num_ctx", [2048, 4096]),
@@ -92,6 +102,7 @@ def make_objective(model: str):
 
 
 def print_results(study: optuna.Study) -> None:
+    """Prints the best trial's parameters and metrics as a table."""
     best = study.best_trial
     print("\n" + "─" * 55)
     print(f"  Best parameters (trial #{best.number}):")
@@ -106,6 +117,7 @@ def print_results(study: optuna.Study) -> None:
 
 
 def save_results(study: optuna.Study, path: str) -> None:
+    """Writes the best parameters plus every completed trial to path as JSON."""
     best = study.best_trial
     data = {
         "best_params": best.params,

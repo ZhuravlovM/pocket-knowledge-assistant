@@ -27,6 +27,7 @@ MAX_LINE_WIDTH = 100
 
 
 def _wrap_width() -> int:
+    """Returns the terminal width minus a margin, capped at MAX_LINE_WIDTH."""
     terminal_width = shutil.get_terminal_size(fallback=(100, 20)).columns
     return min(max(terminal_width - 2, 1), MAX_LINE_WIDTH)
 
@@ -67,6 +68,7 @@ def _wrap_line(line: str, width: int) -> str:
 
 
 def _wrap_preserving_structure(text: str, width: int) -> str:
+    """Wraps text to width, leaving blank lines and fenced code blocks verbatim."""
     lines = text.split("\n")
     out = []
     in_code_block = False
@@ -82,6 +84,7 @@ def _wrap_preserving_structure(text: str, width: int) -> str:
 
 
 def print_response(response) -> None:
+    """Prints the wrapped answer followed by the unique source file names."""
     width = _wrap_width()
     text = response.response or ""
     wrapped = _wrap_preserving_structure(text, width)
@@ -105,6 +108,11 @@ def print_response(response) -> None:
 
 
 def run_chat(query_engine, query_template: str) -> None:
+    """Runs the question/answer REPL until 'exit', EOF, or Ctrl+C at the prompt.
+
+    Query history persistence is best-effort: filesystem errors are logged and
+    the loop continues. Ctrl+C during a query cancels it instead of exiting.
+    """
     try:
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
         if HISTORY_FILE.exists():

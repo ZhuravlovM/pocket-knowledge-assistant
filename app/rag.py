@@ -33,6 +33,10 @@ def configure_settings() -> None:
 
 
 def load_documents(docs_dir: str | None = None):
+    """Reads every supported file under docs_dir recursively.
+
+    Fatal (via die) if the directory is missing, empty, or yields no documents.
+    """
     path = Path(docs_dir or cfg.paths.documents)
     if not path.exists():
         die(f"Documents directory not found: {path}")
@@ -50,6 +54,10 @@ def load_documents(docs_dir: str | None = None):
 
 
 def build_index(documents, index_dir: str | None = None) -> VectorStoreIndex:
+    """Embeds documents into a vector index and persists it to index_dir.
+
+    Requires configure_settings() to have run — embedding uses Settings.embed_model.
+    """
     path = Path(index_dir or cfg.paths.index)
     path.mkdir(parents=True, exist_ok=True)
 
@@ -64,6 +72,11 @@ def build_index(documents, index_dir: str | None = None) -> VectorStoreIndex:
 
 
 def load_index(index_dir: str | None = None) -> VectorStoreIndex:
+    """Loads a previously persisted index; fatal (via die) if it does not exist.
+
+    The stored embeddings only match the embedding model they were built with —
+    changing models.embed in config.yaml requires a full rebuild.
+    """
     path = Path(index_dir or cfg.paths.index)
     if not path.exists():
         die(f"Index directory not found: {path}. Run build_index first.")
@@ -73,6 +86,7 @@ def load_index(index_dir: str | None = None) -> VectorStoreIndex:
 
 
 def get_query_engine(index: VectorStoreIndex, top_k: int | None = None):
+    """Returns a query engine retrieving top_k chunks, using cfg.rag.response_mode."""
     return index.as_query_engine(
         similarity_top_k=top_k or cfg.rag.top_k,
         response_mode=cfg.rag.response_mode,
