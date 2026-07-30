@@ -33,10 +33,25 @@ def _wrap_width() -> int:
 # ── Output ─────────────────────────────────────────────────────────────────────
 
 
+def _wrap_preserving_structure(text: str, width: int) -> str:
+    lines = text.split("\n")
+    out = []
+    in_code_block = False
+    for line in lines:
+        if line.lstrip().startswith("```"):
+            in_code_block = not in_code_block
+            out.append(line)
+        elif in_code_block or not line.strip():
+            out.append(line)
+        else:
+            out.append(textwrap.fill(line, width=width))
+    return "\n".join(out)
+
+
 def print_response(response) -> None:
     width = _wrap_width()
-    paragraphs = response.response.split("\n\n")
-    wrapped = "\n\n".join(textwrap.fill(p, width=width) for p in paragraphs)
+    text = response.response or ""
+    wrapped = _wrap_preserving_structure(text, width)
     print(f"\n{wrapped}\n")
 
     if not response.source_nodes:
@@ -57,9 +72,12 @@ def print_response(response) -> None:
 
 
 def run_chat(query_engine, query_template: str) -> None:
-    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
-    if HISTORY_FILE.exists():
-        readline.read_history_file(HISTORY_FILE)
+    try:
+        HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        if HISTORY_FILE.exists():
+            readline.read_history_file(HISTORY_FILE)
+    except OSError as e:
+        log.warning("Query history unavailable, continuing without it: %s", e)
 
     print(f"\n{'═' * 75}")
     print("  Documentation Assistant  |  'exit' to quit  |  Ctrl+C to cancel a query ")
@@ -78,7 +96,10 @@ def run_chat(query_engine, query_template: str) -> None:
         if question.lower() in ("exit", "q", "quit"):
             break
 
-        readline.write_history_file(HISTORY_FILE)
+        try:
+            readline.write_history_file(HISTORY_FILE)
+        except OSError as e:
+            log.warning("Could not persist query history: %s", e)
 
         try:
             with Spinner("Thinking"):
