@@ -17,9 +17,16 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
 }
 
+LOG_MAX_BYTES=1000000
+
 init_logging() {
     LOG_FILE="$1"
     mkdir -p "$(dirname "$LOG_FILE")"
+
+    # Keep one previous log instead of appending forever.
+    if [[ -f "$LOG_FILE" ]] && (( $(wc -c < "$LOG_FILE") > LOG_MAX_BYTES )); then
+        mv -f "$LOG_FILE" "${LOG_FILE}.1"
+    fi
 }
 
 # ── Output helpers ────────────────────────────────────────────────────────────
