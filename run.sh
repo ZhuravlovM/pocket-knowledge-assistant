@@ -85,7 +85,7 @@ action_build_index() {
         echo
         fail "Index build failed"
     fi
-           
+
     echo
     pause_return
 }

@@ -35,12 +35,12 @@ def _index_ready() -> bool:
     return p.exists() and any(p.iterdir())
 
 
-def _doc_count() -> int:
-    """Returns the number of files under the configured documents directory."""
+def _doc_files() -> list[Path]:
+    """Returns every file under the configured documents directory."""
     p = Path(cfg.paths.documents)
     if not p.exists():
-        return 0
-    return sum(1 for _ in p.rglob("*") if _.is_file())
+        return []
+    return [f for f in p.rglob("*") if f.is_file()]
 
 
 def print_status() -> None:
@@ -73,11 +73,9 @@ def print_status() -> None:
     print()
 
     # Documents
-    count = _doc_count()
-    if count:
-        print(f"  {ok} Documents: {count} file(s) in {cfg.paths.documents}/")
-        files = list(Path(cfg.paths.documents).rglob("*"))
-        files = [f for f in files if f.is_file()]
+    files = _doc_files()
+    if files:
+        print(f"  {ok} Documents: {len(files)} file(s) in {cfg.paths.documents}/")
         for f in files[:5]:
             print(f"      {f}")
         if len(files) > 5:

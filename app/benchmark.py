@@ -88,7 +88,7 @@ def make_objective(model: str):
         try:
             metrics = run_benchmark(model, params)
         except Exception as e:
-            raise optuna.TrialPruned(f"Benchmark failed: {e}")
+            raise optuna.TrialPruned(f"Benchmark failed: {e}") from e
 
         for k, v in metrics.items():
             trial.set_user_attr(k, v)
