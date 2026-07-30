@@ -18,14 +18,25 @@ from llama_index.core import (
 from app.config import cfg
 from app.embeddings import get_embed_model
 from app.llm import get_llm
+from app.prompts import load_prompts
 from app.utils import die, get_logger
 
 log = get_logger(__name__)
 
 
 def configure_settings() -> None:
-    """Applies LLM and embedding model to global LlamaIndex Settings."""
-    Settings.llm = get_llm()
+    """Applies LLM and embedding model to global LlamaIndex Settings.
+
+    The system prompt from config/prompts.yaml is attached to the LLM here; a
+    missing or unreadable prompts file is logged and the LLM runs without it.
+    """
+    system_prompt = None
+    try:
+        system_prompt = load_prompts().system
+    except (OSError, KeyError) as e:
+        log.warning("System prompt unavailable, continuing without it: %s", e)
+
+    Settings.llm = get_llm(system_prompt=system_prompt)
     Settings.embed_model = get_embed_model()
 
 
