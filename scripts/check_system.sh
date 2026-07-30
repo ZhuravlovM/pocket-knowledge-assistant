@@ -17,16 +17,17 @@ divider
 # Python
 if command -v python3 &>/dev/null; then
     pyver=$(python3 --version 2>&1)
+    major=$(python3 -c "import sys; print(sys.version_info.major)")
     minor=$(python3 -c "import sys; print(sys.version_info.minor)")
-    if [[ "$minor" -ge "$MIN_PYTHON_MINOR" ]]; then
+    if [[ "$major" -gt 3 || ( "$major" -eq 3 && "$minor" -ge "$MIN_PYTHON_MINOR" ) ]]; then
         ok "$pyver"
     else
         fail "$pyver — Python 3.${MIN_PYTHON_MINOR}+ required"
-        ((errors++))
+        errors=$((errors + 1))
     fi
 else
     fail "python3 not found"
-    ((errors++))
+    errors=$((errors + 1))
 fi
 
 # Ollama binary
@@ -34,7 +35,7 @@ if command -v ollama &>/dev/null; then
     ok "ollama found"
 else
     fail "ollama not found — install from https://ollama.com"
-    ((errors++))
+    errors=$((errors + 1))
 fi
 
 # Ollama running
@@ -45,10 +46,10 @@ else
 fi
 
 # Required Python packages
-check_python_packages llama_index yaml || ((errors += $?))
+check_python_packages llama_index yaml || errors=$((errors + $?))
 
 # Config files
-check_files_exist config/config.yaml config/prompts.yaml || ((errors += $?))
+check_files_exist config/config.yaml config/prompts.yaml || errors=$((errors + $?))
 
 # Directories
 check_dirs_exist data/documents data/index logs

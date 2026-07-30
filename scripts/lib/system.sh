@@ -59,7 +59,7 @@ check_python_packages() {
             ok "python: $pkg"
         else
             fail "python: $pkg not installed"
-            ((errors++))
+            errors=$((errors + 1))
         fi
     done
     return $errors
@@ -73,7 +73,7 @@ check_files_exist() {
             ok "$f"
         else
             fail "$f not found"
-            ((errors++))
+            errors=$((errors + 1))
         fi
     done
     return $errors

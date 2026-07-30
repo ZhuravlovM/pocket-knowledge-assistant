@@ -7,6 +7,7 @@ Usage:
 
 from __future__ import annotations
 
+import shlex
 import subprocess
 from pathlib import Path
 
@@ -88,7 +89,7 @@ def print_status() -> None:
 
     # Index
     if _index_ready():
-        size = _run(f"du -sh {cfg.paths.index} 2>/dev/null | cut -f1")
+        size = _run(f"du -sh {shlex.quote(cfg.paths.index)} 2>/dev/null | cut -f1")
         print(f"  {ok} Index ready ({cfg.paths.index}/ — {size})")
     else:
         print(f"  {warn} Index not built")

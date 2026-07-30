@@ -21,12 +21,9 @@ status_bar() {
         model="${model} (not pulled)"
     fi
 
-    doc_count=$(find data/documents -type f 2>/dev/null | wc -l | tr -d ' ')
+    doc_count=$(find "$(cfg_docs_dir)" -type f 2>/dev/null | wc -l | tr -d ' ')
 
-    local index_dir
-    index_dir=$(cfg_index_dir)
-
-    if [[ -d "$index_dir" && -n "$(find "$index_dir" -type f -print -quit 2>/dev/null)" ]]; then
+    if check_index; then
         index_status="ready"
     else
         index_status="not built"
@@ -39,7 +36,7 @@ status_bar() {
 check_index() {
     local index_dir
     index_dir=$(cfg_index_dir)
-    [[ -d "$index_dir" && -n "$(ls -A "$index_dir" 2>/dev/null)" ]]
+    [[ -d "$index_dir" && -n "$(find "$index_dir" -type f -print -quit 2>/dev/null)" ]]
 }
 
 # ── Actions ───────────────────────────────────────────────────────────────────
@@ -129,7 +126,11 @@ action_benchmark() {
         warn "optuna not installed"
         confirm "Install now?" || { echo; return; }
         echo
-        pip install optuna --quiet && ok "optuna installed" || { fail "Install failed"; return; }
+        if ! pip install optuna --quiet; then
+            fail "Install failed"
+            return
+        fi
+        ok "optuna installed"
     fi
 
     local trials
@@ -171,7 +172,7 @@ menu() {
         echo
         echo -e "  ${BOLD}What would you like to do?${RESET}"
         echo
-        echo -e "  ${FG_CYAN}1${RESET}  ${FG_WHITE}Build index${RESET}            ${FG_GRAY}data/documents → data/index${RESET}"
+        echo -e "  ${FG_CYAN}1${RESET}  ${FG_WHITE}Build index${RESET}            ${FG_GRAY}$(cfg_docs_dir) → $(cfg_index_dir)${RESET}"
         echo -e "  ${FG_CYAN}2${RESET}  ${FG_WHITE}Start chat${RESET}             ${FG_GRAY}ask questions about docs${RESET}"
         echo -e "  ${FG_CYAN}3${RESET}  ${FG_WHITE}Status${RESET}                 ${FG_GRAY}models, docs, index${RESET}"
         echo -e "  ${FG_CYAN}4${RESET}  ${FG_WHITE}Benchmark${RESET}              ${FG_GRAY}tune Ollama parameters${RESET}"

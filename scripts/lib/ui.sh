@@ -108,7 +108,8 @@ run_spinner() {
     local msg="$1"
     shift
 
-    "$@" >> "$LOG_FILE" 2>&1 &
+    # Callers without file logging (run.sh) leave LOG_FILE unset — discard there.
+    "$@" >> "${LOG_FILE:-/dev/null}" 2>&1 &
     local pid=$!
 
     spinner "$pid" "$msg"
