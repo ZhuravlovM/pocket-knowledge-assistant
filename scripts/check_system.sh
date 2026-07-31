@@ -3,32 +3,31 @@
 
 set -uo pipefail
 
-RESET='\033[0m'; BOLD='\033[1m'
-FG_GREEN='\033[92m'; FG_RED='\033[91m'; FG_YELLOW='\033[93m'; FG_CYAN='\033[96m'; FG_GRAY='\033[90m'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/common.sh
+source "${SCRIPT_DIR}/lib/common.sh"
 
-ok()   { echo -e "  ${FG_GREEN}✓${RESET} $*"; }
-fail() { echo -e "  ${FG_RED}✗${RESET} $*"; }
-warn() { echo -e "  ${FG_YELLOW}⚠${RESET} $*"; }
-info() { echo -e "  ${FG_CYAN}→${RESET} $*"; }
+# No file logging for this script — LOG_FILE left unset, log() becomes a no-op.
 
 errors=0
 
 echo -e "\n  ${BOLD}System check${RESET}"
-echo -e "  ${FG_GRAY}──────────────────────────────────────────────────${RESET}"
+divider
 
 # Python
 if command -v python3 &>/dev/null; then
     pyver=$(python3 --version 2>&1)
+    major=$(python3 -c "import sys; print(sys.version_info.major)")
     minor=$(python3 -c "import sys; print(sys.version_info.minor)")
-    if [[ "$minor" -ge 11 ]]; then
+    if [[ "$major" -gt 3 || ( "$major" -eq 3 && "$minor" -ge "$MIN_PYTHON_MINOR" ) ]]; then
         ok "$pyver"
     else
-        fail "$pyver — Python 3.11+ required"
-        ((errors++))
+        fail "$pyver — Python 3.${MIN_PYTHON_MINOR}+ required"
+        errors=$((errors + 1))
     fi
 else
     fail "python3 not found"
-    ((errors++))
+    errors=$((errors + 1))
 fi
 
 # Ollama binary
@@ -36,46 +35,26 @@ if command -v ollama &>/dev/null; then
     ok "ollama found"
 else
     fail "ollama not found — install from https://ollama.com"
-    ((errors++))
+    errors=$((errors + 1))
 fi
 
 # Ollama running
-if ollama list &>/dev/null 2>&1; then
+if ollama_running; then
     ok "Ollama is running"
 else
     warn "Ollama is not running"
 fi
 
 # Required Python packages
-for pkg in llama_index yaml; do
-    if python3 -c "import $pkg" &>/dev/null; then
-        ok "python: $pkg"
-    else
-        fail "python: $pkg not installed"
-        ((errors++))
-    fi
-done
+check_python_packages llama_index yaml || errors=$((errors + $?))
 
 # Config files
-for f in config/config.yaml config/prompts.yaml; do
-    if [[ -f "$f" ]]; then
-        ok "$f"
-    else
-        fail "$f not found"
-        ((errors++))
-    fi
-done
+check_files_exist config/config.yaml config/prompts.yaml || errors=$((errors + $?))
 
 # Directories
-for d in data/documents data/index logs; do
-    if [[ -d "$d" ]]; then
-        ok "dir: $d"
-    else
-        warn "dir: $d (missing — will be created on first run)"
-    fi
-done
+check_dirs_exist data/documents data/index logs
 
-echo -e "  ${FG_GRAY}──────────────────────────────────────────────────${RESET}"
+divider
 
 if [[ $errors -eq 0 ]]; then
     echo -e "  ${FG_GREEN}All checks passed.${RESET}"

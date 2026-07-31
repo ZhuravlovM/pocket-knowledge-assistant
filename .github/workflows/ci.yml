@@ -1,0 +1,24 @@
+name: Check code quality
+
+on: [pull_request]
+
+jobs:
+  code-quality:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install black ruff isort -c requirements.txt
+      - name: Run formatters
+        run: python -m black --check . && python -m isort --check .
+      - name: Run linter
+        run: python -m ruff check .
+        

@@ -21,11 +21,11 @@ ollama:
   num_ctx: 2048
   num_batch: 256
   num_thread: 5
-  temperature: 0.3
+  temperature: 0.2
 
 # ── RAG ───────────────────────────────────────────────────────────────────────
 
 rag:
-  top_k: 10
+  top_k: 5
   response_mode: compact
   

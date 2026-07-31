@@ -1,0 +1,29 @@
+# Versions must match the dev pins in requirements.txt.
+# language: python lets pre-commit install the tools itself, so hooks work in a
+# clean checkout and no longer depend on .venv being active.
+repos:
+- repo: local
+  hooks:
+    - id: black
+      name: "Checking formatting"
+      entry: black --check .
+      language: python
+      additional_dependencies: ["black==26.5.1"]
+      types: [python]
+      pass_filenames: false
+
+    - id: isort
+      name: "Checking imports"
+      entry: isort --check-only .
+      language: python
+      additional_dependencies: ["isort==8.0.1"]
+      types: [python]
+      pass_filenames: false
+
+    - id: ruff
+      name: "Running linter"
+      entry: ruff check .
+      language: python
+      additional_dependencies: ["ruff==0.15.20"]
+      types: [python]
+      pass_filenames: false
